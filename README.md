@@ -22,6 +22,6 @@ The configuration file has the following variables:
 group=wheel
 wrong_pw_sleep=1000
 session_ttl=5
-group: The group of users that is allowed to execute rdo.
+group: The group of users that is allowed to execute boru.
 wrong_pw_sleep: The amount of milliseconds to sleep at a wrong password attempt. Must be a positive integer. Set to 0 to disable.
 session_ttl: The amount of minutes a session lasts. Must be a positive integer. Set to 0 to disa
