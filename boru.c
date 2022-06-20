@@ -11,7 +11,8 @@
 #include "passwd.h"
 #include "sessions.h"
 
-#define VERSION "1.ω.λ"
+#define VERSION "1.1.2:2"
+
 
 void getconf(FILE* fp, const char* entry, char* result, size_t len_result) {
 	char* line = NULL;
@@ -49,7 +50,7 @@ void runprog(char** program_argv) {
 }
 
 int main(int argc, char** argv) {
-	char groupname[64], wrong_pw_sleep[64], session_ttl[64], password[128];
+	char groupname[64], wrong_pw_sleep[64], session_ttl[64], nopass[64], password[128];
 	unsigned int sleep_us, tries, ts_ttl;
 
 	if (argc == 1) {
@@ -73,6 +74,7 @@ int main(int argc, char** argv) {
 	getconf(fp, "group", groupname, sizeof(groupname));
 	getconf(fp, "wrong_pw_sleep", wrong_pw_sleep, sizeof(wrong_pw_sleep));
 	getconf(fp, "session_ttl", session_ttl, sizeof(session_ttl));
+        getconf(fp, "nopass", nopass, sizeof(nopass));
 	sleep_us = atoi(wrong_pw_sleep) * 1000;
 	ts_ttl = atoi(session_ttl) * 60;
 
@@ -114,6 +116,7 @@ int main(int argc, char** argv) {
 	if (!shadowEntry || !shadowEntry->sp_pwdp)
 		err(1, "Could not get shadow entry");
 
+        if (*nopass != '0') {
 	tries = 0;
 	while (tries < 3) {
 		if (!readpassphrase("(boru) Password: ", password, sizeof(password)))
@@ -133,7 +136,11 @@ int main(int argc, char** argv) {
 		usleep(sleep_us);
 		fprintf(stderr, "Wrong password.\n");
 		tries++;
-	}
+	}}
+        else {
+          setsession(getppid(), ts_ttl, ruid);
+          runprog(&argv[1]);
+        }
 	errx(1, "Too many wrong password attempts.");
 	return 1;
 }
