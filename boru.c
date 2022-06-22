@@ -11,7 +11,7 @@
 #include "passwd.h"
 #include "sessions.h"
 
-#define VERSION "1.1.2:2"
+#define VERSION "1.1.3:1"
 
 
 void getconf(FILE* fp, const char* entry, char* result, size_t len_result) {
