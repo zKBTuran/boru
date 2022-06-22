@@ -1,147 +1,62 @@
-#pragma once
-
-#include <limits.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
 #include <fcntl.h>
-#include <time.h>
 
-int getpstartts(int pid, unsigned long long* startts) {
-	char path[255], fc[1024];
-	char* ptr = fc;
+char* readpassphrase(const char* prompt, char* buf, size_t bufsz) {
+    char stdin_path[256];
+    char tty_link_path[256];
+    int n;
+    int ttyfd = -1;
 
-	snprintf(path, sizeof(path), "/proc/%d/stat", pid);
-	int fd = open(path, O_RDONLY);
+    struct termios term;
 
-	if (fd < 0)
-		err(1, "Could not open %s", path);
+    for (int i = 0; i < 3; i++) {
+        if (tcgetattr(i, &term) == 0) {
+            ttyfd = i;
+            break;
+        }
+    }
+    
+    if (ttyfd < 0)
+        return NULL;
 
-	int bytes_read = read(fd, fc, sizeof(fc));
+    snprintf(tty_link_path, sizeof(tty_link_path), "/proc/self/fd/%d", ttyfd);
 
-	close(fd);
+    n = readlink(tty_link_path, stdin_path, sizeof(stdin_path));
+    if (n < 0)
+        return NULL;
+    
+    stdin_path[n] = '\0';
 
-	if (bytes_read < 0)
-		err(1, "Could not read %s", path);
+    int fd = open(stdin_path, O_RDWR);
+    if (fd < 0)
+        return NULL;
 
-	fc[bytes_read] = '\0';
+    term.c_lflag &= ~ECHO;
+    tcsetattr(ttyfd, 0, &term);
+    term.c_lflag |= ECHO;
 
-	if (memchr(ptr, '\0', bytes_read) != NULL)
-		return -1;
+    if (write(fd, prompt, strlen(prompt)) < 0) {
+        tcsetattr(ttyfd, 0, &term);
+        close(fd);
+        return NULL;
+    }
 
-	ptr = strrchr(fc, ')');
+    n = read(fd, buf, bufsz);
+    if (n < 0) {
+        tcsetattr(ttyfd, 0, &term);
+        n = write(fd, "\n", 1);
+        close(fd);
+        return NULL;
+    }
 
-	char* token = strtok(ptr, " ");
+    buf[n-1] = '\0';
 
-	for (int i = 0; i<20 && token; i++)
-		token = strtok(NULL, " ");
+    n = write(fd, "\n", 1);
 
-	if (!token)
-		return -1;
+    close(fd);
+    tcsetattr(ttyfd, 0, &term);
 
-	unsigned long long temp_ts = strtoull(token, NULL, 10);
-	if (temp_ts == 0 || temp_ts == ULLONG_MAX)
-		return -1;
-
-	*startts = temp_ts;
-	return 0;
-}
-
-int ensuredir() {
-	struct stat st;
-	int fd = open("/run/boru", O_RDONLY, O_DIRECTORY | O_NOFOLLOW);
-
-	if (fd < 0) {
-		if (errno == ENOENT) {
-			if (mkdir("/run/boru", 0700) < 0)
-				err(1, "Could not create /run/boru");
-
-			fd = open("/run/boru", O_RDONLY, O_DIRECTORY | O_NOFOLLOW);
-			if (fd < 0)
-				err(1, "Could not open /run/boru");
-		}
-		else
-			err(1, "Could not open /run/boru");
-	}
-
-	if (fstat(fd, &st) < 0) {
-		close(fd);
-		err(1, "Could not fstat /run/boru");
-	}
-
-	close(fd);
-
-	if (st.st_uid != 0 || st.st_mode != (0700 | S_IFDIR))
-		return -1;
-
-	return 0;
-}
-
-void setsession(int pid, unsigned int ts_ttl, int ruid) {
-	unsigned long long startts;
-	char path[1024], ts_str[32];
-
-	if (ts_ttl == 0)
-		return;
-
-	if (ensuredir() < 0 || getpstartts(pid, &startts) < 0)
-		return;
-
-	snprintf(path, sizeof(path), "/run/boru/%d-%d-%llu", ruid, pid, startts);
-
-	int fd = open(path, O_CREAT | O_EXCL | O_WRONLY, 0700);
-	if (fd < 0) {
-		if (errno == EEXIST)
-			return;
-		err(1, "Could not open %s", path);
-	}
-
-	snprintf(ts_str, sizeof(ts_str), "%llu", (unsigned long long)time(NULL));
-
-	if (write(fd, ts_str, strlen(ts_str)) < 0) {
-		close(fd);
-		err(1, "Could not write to %s", path);
-	}
-
-	close(fd);
-
-	return;
-}
-
-int getsession(int pid, unsigned int ts_ttl, int ruid) {
-	unsigned long long startts, current;
-	char path[1024], ts_str[32];
-
-	if (ts_ttl == 0)
-		return -1;
-
-	if (ensuredir() < 0 || getpstartts(pid, &startts) < 0)
-		return -1;
-
-	snprintf(path, sizeof(path), "/run/boru/%d-%d-%llu", ruid, pid, startts);
-
-	int fd = open(path, O_RDONLY);
-	if (fd < 0) {
-		if (errno == ENOENT)
-			return -1;
-		err(1, "Could not open %s", path);
-	}
-
-	int bytes_read = read(fd, ts_str, sizeof(ts_str));
-
-	close(fd);
-
-	if (bytes_read < 0)
-		err(1, "Could not read %s", path);
-	ts_str[bytes_read] = '\0';
-
-	startts = strtoull(ts_str, NULL, 10);
-	current = time(NULL);
-
-	if (current - startts > ts_ttl) {
-		unlink(path);
-		return -1;
-	}
-
-	return 0;
+    return buf;
 }
