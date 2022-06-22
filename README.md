@@ -1,6 +1,6 @@
 # Bonek Root User (boru) <!-- ratio -->
 
-Boru is a tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [doas](https://github.com/Duncaen/OpenDoas).
+Boru is a tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [OpenDoas](https://github.com/Duncaen/OpenDoas).
 
 
 ## Installation
