@@ -5,7 +5,7 @@ Boru is a simple alternative for sudo and doas.
 
 ## Installation
 
-If you are on Arch Linux, you can download the package from the AUR.
+If you are on Arch Linux, you can download the package from the AUR. // not uploaded the pkgbuild too aur yet //
 Or else you are on other distribution you have to clone and build the package yourself.
 
 ### Manual Installation
