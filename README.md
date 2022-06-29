@@ -16,7 +16,7 @@ $ cd boru
 # make
 # sudo make install
 ```
-After that, you are basically done. **If it doesn't work, you might have to change the configuration file. Which is in /etc/boru.conf, and set the group variable to the admin group you are in. If you don't know which group is it, you can check out /etc/group.**
+After that, you are basically done. **If it doesn't work, you might have to change the configuration file. Which is in `/etc/boru.conf`, and set the group variable to the admin group you are in. If you don't know which group is it, you can check out `/etc/group`.**
 
 ### Manual Uninstallation
 
