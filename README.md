@@ -1,12 +1,12 @@
 # Bonek Root User (boru) <!-- ratio -->
 
-Boru is a tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [OpenDoas](https://github.com/Duncaen/OpenDoas).
+Boru is a minimalist tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [OpenDoas](https://github.com/Duncaen/OpenDoas).
 
 
 ## Installation
 
-If you are on Arch Linux, you can download the package from the AUR. // not uploaded the pkgbuild too aur yet //
-Or else you are on other distribution you have to clone and build the package yourself.
+If you are on Arch Linux, you can download the package from the AUR. // Didn't upload the pkgbuild to AUR yet.. //
+You can install Boru on other distributions but you have to clone and build the package yourself.
 
 ### Manual Installation
 
@@ -16,7 +16,7 @@ $ cd boru
 # make
 # sudo make install
 ```
-After that, you'll have to configure boru to allow you to use it. To do this, edit /etc/boru.conf, and set the group variable to the admin group you are in.
+After that, you are basically done. **If it doesn't work, you might have to change the configuration file. Which is in `/etc/boru.conf`, and set the group variable to the admin group you are in. If you don't know which group is it, you can check out `/etc/group`.**
 
 ### Manual Uninstallation
 
