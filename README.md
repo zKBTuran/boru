@@ -3,11 +3,11 @@
 Boru is a minimalist tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [OpenDoas](https://github.com/Duncaen/OpenDoas).
 
 
-## Installation
+<!--## Installation
 
 If you are on Arch Linux, you can download the package from the AUR. // Didn't upload the pkgbuild to AUR yet.. //
 You can install Boru on other distributions but you have to clone and build the package yourself.
-
+-->
 ### Manual Installation
 
 ```
