@@ -1,7 +1,7 @@
 # Bonek Root User (boru) <!-- ratio -->
 
 Boru is a minimalist tool to run commands with elevated privileges. A simple alternative to [Sudo](https://www.sudo.ws/sudo/) and [OpenDoas](https://github.com/Duncaen/OpenDoas).
-
+<!-- minimalist?! really? -->
 
 <!--## Installation
 
@@ -14,7 +14,7 @@ You can install Boru on other distributions but you have to clone and build the 
 $ git clone https://github.com/zKBTuran/boru
 $ cd boru
 # make
-# sudo make install
+# make install
 ```
 After that, you are basically done. **If it doesn't work, you might have to change the configuration file. Which is in `/etc/boru.conf`, and set the group variable to the admin group you are in. If you don't know which group is it, you can check out `/etc/group`.**
 
