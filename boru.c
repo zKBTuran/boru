@@ -46,7 +46,7 @@ void runprog(char** program_argv) {
 
 	execvp(program_argv[0], program_argv);
 
-	err(1, program_argv[0]);
+	err(1, "%s", program_argv[0]);
 }
 
 int main(int argc, char** argv) {
