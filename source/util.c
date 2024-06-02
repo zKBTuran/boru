@@ -1,11 +1,56 @@
-#pragma once
+#include "common.h"
 
-#include <limits.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <time.h>
+void genconf(const char* path) {
+    FILE* fp = fopen(path, "w");
+    if (!fp)
+        errx(1, "Could not create %s", path);
+
+    fprintf(fp, "group=wheel\n");
+    fprintf(fp, "wrong_pw_sleep=1000\n");
+    fprintf(fp, "session_ttl=5\n");
+    fprintf(fp, "nopass=1\n");
+
+    if (fclose(fp) != 0)
+        errx(1, "Error closing the file %s", path);
+}
+
+void getconf(FILE* fp, const char* entry, char* result, size_t len_result) {
+    char* line = NULL;
+    size_t len = 0;
+
+    fseek(fp, 0, SEEK_SET);
+
+    while (getline(&line, &len, fp) != -1) {
+        if (strncmp(entry, line, strlen(entry)) == 0) {
+            strtok(line, "=");
+            char* token = strtok(NULL, "=");
+            if (token) {
+                strncpy(result, token, len_result);
+                result[strcspn(result, "\n")] = 0;
+                free(line);
+                return;
+            }
+        }
+        free(line);
+        line = NULL;
+        len = 0;
+    }
+
+    errx(1, "Could not get '%s' entry in config", entry);
+}
+
+void runprog(char** program_argv) {
+	if (setuid(0) < 0)
+		err(1, "Could not setuid");
+	if (setgid(0) < 0)
+		err(1, "Could not setgid");
+
+	putenv("HOME=/root");
+
+	execvp(program_argv[0], program_argv);
+
+	err(1, program_argv[0]);
+}
 
 int getpstartts(int pid, unsigned long long* startts) {
 	char path[255], fc[1024];
@@ -47,7 +92,7 @@ int getpstartts(int pid, unsigned long long* startts) {
 	return 0;
 }
 
-int ensuredir() {
+int ensuredir(void) {
 	struct stat st;
 	int fd = open("/run/boru", O_RDONLY, O_DIRECTORY | O_NOFOLLOW);
 
@@ -144,4 +189,62 @@ int getsession(int pid, unsigned int ts_ttl, int ruid) {
 	}
 
 	return 0;
+}
+
+char* readpassphrase(const char* prompt, char* buf, size_t bufsz) {
+    char stdin_path[256];
+    char tty_link_path[256];
+    int n;
+    int ttyfd = -1;
+
+    struct termios term;
+
+    for (int i = 0; i < 3; i++) {
+        if (tcgetattr(i, &term) == 0) {
+            ttyfd = i;
+            break;
+        }
+    }
+    
+    if (ttyfd < 0)
+        return NULL;
+
+    snprintf(tty_link_path, sizeof(tty_link_path), "/proc/self/fd/%d", ttyfd);
+
+    n = readlink(tty_link_path, stdin_path, sizeof(stdin_path));
+    if (n < 0)
+        return NULL;
+    
+    stdin_path[n] = '\0';
+
+    int fd = open(stdin_path, O_RDWR);
+    if (fd < 0)
+        return NULL;
+
+    term.c_lflag &= ~ECHO;
+    tcsetattr(ttyfd, 0, &term);
+    term.c_lflag |= ECHO;
+
+    if (write(fd, prompt, strlen(prompt)) < 0) {
+        tcsetattr(ttyfd, 0, &term);
+        close(fd);
+        return NULL;
+    }
+
+    n = read(fd, buf, bufsz);
+    if (n < 0) {
+        tcsetattr(ttyfd, 0, &term);
+        n = write(fd, "\n", 1);
+        close(fd);
+        return NULL;
+    }
+
+    buf[n-1] = '\0';
+
+    n = write(fd, "\n", 1);
+
+    close(fd);
+    tcsetattr(ttyfd, 0, &term);
+
+    return buf;
 }

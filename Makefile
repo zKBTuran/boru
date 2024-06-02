@@ -1,26 +1,39 @@
-CFLAGS = -Wall -Wextra -Werror -Wl,-z,now
-CFLAGS_RELEASE = ${CFLAGS} -O2 -s -D_FORTIFY_SOURCE=2
-CFLAGS_DEBUG = ${CFLAGS} -O0 -g -fsanitize=undefined
-LIBS = -lcrypt
+TARGET = boru
+SRCDIR = source
+INCDIR = include
+
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(SRCDIR)/%.o)
+
 CC = gcc
+LIBS = -lcrypt
+CFLAGS = -Wall -Wextra -Werror -Wl,-z,now
+CFLAGS_RELEASE = $(CFLAGS) -O2 -s -D_FORTIFY_SOURCE=2
+CFLAGS_DEBUG = $(CFLAGS) -O0 -g -fsanitize=undefined
 
-all: boru.c
-	${CC} ${CFLAGS_RELEASE} boru.c -o boru ${LIBS}
+$(SRCDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -I$(INCDIR) -c $< -o $@
 
-debug: boru.c
-	${CC} ${CFLAGS_DEBUG} boru.c -o boru ${LIBS}
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -I$(INCDIR) $(OBJECTS) -o $(TARGET) $(LIBS)
 
-install: boru
-	cp boru /usr/bin/boru
-	chown root:root /usr/bin/boru
-	chmod 755 /usr/bin/boru
-	chmod u+s /usr/bin/boru
-	cp boru_sample.conf /etc/boru.conf
-	chmod 600 /etc/boru.conf
+all: release
+
+release: CFLAGS := $(CFLAGS_RELEASE)
+release: $(TARGET)
+
+debug: CFLAGS := $(CFLAGS_DEBUG)
+debug: $(TARGET)
+
+
+install: $(TARGET)
+	install -m 4755 $(TARGET) /usr/bin/$(TARGET)
 
 uninstall:
-	rm /usr/bin/boru
-	rm /etc/boru.conf
+	rm -rf /usr/bin/$(TARGET)
+	rm -rf /etc/boru.conf
 
 clean:
-	rm boru
+	rm -rf $(SRCDIR)/*.o $(TARGET)
+
+.PHONY: all debug release install uninstall clean
