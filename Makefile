@@ -25,7 +25,6 @@ release: $(TARGET)
 debug: CFLAGS := $(CFLAGS_DEBUG)
 debug: $(TARGET)
 
-
 install: $(TARGET)
 	install -m 4755 $(TARGET) /usr/bin/$(TARGET)
 
