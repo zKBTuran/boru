@@ -19,14 +19,12 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.1.4"
-
-char* readpassphrase(const char* prompt, char* buf, size_t bufsz);
 int ensuredir(void);
+void genconf(const char* path);
+void runprog(char** program_argv);
 int getpstartts(int pid, unsigned long long* startts);
 int getsession(int pid, unsigned int ts_ttl, int ruid);
-void genconf(const char* path);
-void getconf(FILE* fp, const char* entry, char* result, size_t len_result);
-void runprog(char** program_argv);
 void setsession(int pid, unsigned int ts_ttl, int ruid);
+char* readpassphrase(const char* prompt, char* buf, size_t bufsz);
+void getconf(FILE* fp, const char* entry, char* result, size_t len_result);
 #endif

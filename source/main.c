@@ -1,12 +1,14 @@
 #include "common.h"
 
+#define VERSION "1.1.4"
+#define CONFIG_PATH "/etc/boru.conf"
+
 int main(int argc, char **argv) {
     unsigned int sleep_us, ts_ttl;
-    const char *config_path = "/etc/boru.conf";
     char groupname[64], wrong_pw_sleep[64], session_ttl[64], nopass[64], password[128];
 
-    if (access(config_path, F_OK) == -1)
-        genconf(config_path);
+    if (access(CONFIG_PATH, F_OK) == -1)
+        genconf(CONFIG_PATH);
 
     if (argc == 1) {
         printf(" _               \n"
@@ -25,7 +27,7 @@ int main(int argc, char **argv) {
     if (ruid == 0)
         runprog(&argv[1]);
 
-    FILE *fp = fopen(config_path, "r");
+    FILE *fp = fopen(CONFIG_PATH, "r");
     getconf(fp, "group", groupname, sizeof(groupname));
     getconf(fp, "wrong_pw_sleep", wrong_pw_sleep, sizeof(wrong_pw_sleep));
     getconf(fp, "session_ttl", session_ttl, sizeof(session_ttl));
