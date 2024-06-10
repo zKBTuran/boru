@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
     struct passwd *pw = getpwuid(ruid);
     if (!pw)
-        err(1, "Could not get user info");
+        errx(1, "Could not get user info");
 
     struct group *grp = getgrnam(groupname);
     if (!grp)
@@ -60,12 +60,12 @@ int main(int argc, char **argv) {
 
     struct spwd *sp = getspnam(pw->pw_name);
     if (!sp || !sp->sp_pwdp)
-        err(1, "Could not get shadow entry");
+        errx(1, "Could not get shadow entry");
 
-    if (*nopass != '1') {
+    if (*nopass != '0') {
         for (int tries = 0; tries < 3; tries++) {
             if (!readpassphrase("(boru) Password: ", password, sizeof(password)))
-                err(1, "Could not get passphrase");
+                errx(1, "Could not get passphrase");
 
             char *hashed_pw = crypt(password, sp->sp_pwdp);
             explicit_bzero(password, sizeof(password));

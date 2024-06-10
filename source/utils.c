@@ -8,7 +8,7 @@ void genconf(const char *path) {
     fprintf(fp, "group=wheel\n");
     fprintf(fp, "wrong_pw_sleep=1000\n");
     fprintf(fp, "session_ttl=5\n");
-    fprintf(fp, "nopass=0\n");
+    fprintf(fp, "nopass=1\n");
 
     if (fclose(fp) != 0)
         errx(1, "Error closing the file %s", path);
