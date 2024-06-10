@@ -34,7 +34,7 @@ This is the default configuration for boru:
 group=wheel
 wrong_pw_sleep=1000
 session_ttl=5
-nopass=1
+nopass=0
 ```
 Here is the meaning of these variables:
 
@@ -44,4 +44,4 @@ Here is the meaning of these variables:
 
 **session_ttl**: The amount of minutes a session lasts. Must be a positive integer. Set to 0 to disable.
 
-**nopass**: Sets whether the boru will ask for password or not. Set to 0 to enable. ⚠️❗ ***Warning! This may cause a huge security hole in your system. This option is not recommended. Please do not use it if you have important data on your device.*** ❗⚠️ 
+**nopass**: Sets whether the boru will ask for password or not. Set to 1 to enable. ⚠️❗ ***Warning! This may cause a huge security hole in your system. This option is not recommended. Please do not use it if you have important data on your device.*** ❗⚠️ 
